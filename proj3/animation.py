@@ -2,8 +2,8 @@
 
 import os.path
 
-from PyQt5.QtCore import QTimer
-from PyQt5.QtGui import QBrush
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QBrush, QPainter
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsView
 
 from . import util
@@ -36,6 +36,9 @@ class Animation(object):
 
         # create the window
         self.view = QGraphicsView(self.scene)
+        self.view.setRenderHints(QPainter.Antialiasing | QPainter.SmoothPixmapTransform)
+        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.view.setWindowTitle(self.title)
 

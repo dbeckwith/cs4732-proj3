@@ -4,10 +4,11 @@ import sys
 import math
 import itertools
 
-from PyQt5.QtGui import QVector3D
+from PyQt5.QtGui import QPen, QBrush
 from PyQt5.QtWidgets import QApplication
 
 from .animation import Animation
+from .boids import BoidSim
 from . import util
 
 
@@ -22,6 +23,7 @@ class Proj3Ani(Animation):
             frame_rate=60.0,
             run_time=60.0)
 
+        self.view.resize(1000, 1000)
         self.setup_scene(
             background_color=util.hsl(0, 0, 100))
 
@@ -29,13 +31,18 @@ class Proj3Ani(Animation):
         """
         Overriddes Animation.make_scene
         """
-        pass
+        self.sim = BoidSim(self.scene, 500)
+        self.bounds = self.scene.addEllipse(
+            -self.sim.bounds_radius, -self.sim.bounds_radius,
+            self.sim.bounds_radius * 2, self.sim.bounds_radius * 2,
+            QPen(),
+            QBrush())
 
     def update(self, frame, t, dt):
         """
         Overriddes Animation.update
         """
-        pass
+        self.sim.update(dt)
 
 
 if __name__ == '__main__':
