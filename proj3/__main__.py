@@ -23,7 +23,8 @@ class Proj3Ani(Animation):
             frame_rate=60.0,
             run_time=60.0)
 
-        self.view.resize(1000, 1000)
+        # set view size
+        self.view.resize(800, 800)
         self.setup_scene(
             background_color=util.hsl(0, 0, 100))
 
@@ -31,17 +32,15 @@ class Proj3Ani(Animation):
         """
         Overriddes Animation.make_scene
         """
-        self.sim = BoidSim(self.scene, 500)
-        self.bounds = self.scene.addEllipse(
-            -self.sim.bounds_radius, -self.sim.bounds_radius,
-            self.sim.bounds_radius * 2, self.sim.bounds_radius * 2,
-            QPen(),
-            QBrush())
+        # create boid sim
+        # pick bounds radius to fit inside view
+        self.sim = BoidSim(self.scene, min(self.view.width(), self.view.height()) / 2)
 
     def update(self, frame, t, dt):
         """
         Overriddes Animation.update
         """
+        # just update boid sim
         self.sim.update(dt)
 
 
