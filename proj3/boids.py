@@ -11,8 +11,6 @@ from . import util
 
 
 class BoidSim(object):
-    # TODO: obstacles
-    
     team_attractions = {
         'red': 'blue',
         'blue': 'green',
@@ -27,24 +25,39 @@ class BoidSim(object):
     def __init__(self, scene, bounds_radius):
         self.scene = scene
         self.bounds_radius = bounds_radius
+
         self.boids = set()
         for team in Boid.team_colors.keys():
             for _ in range(30):
-                pr = random.random() * bounds_radius
-                pt = random.random() * math.pi * 2
+                pr = random.uniform(0, bounds_radius)
+                pt = random.uniform(0, math.pi * 2)
                 vr = Boid.speed
-                vt = random.random() * math.pi * 2
+                vt = random.uniform(0, math.pi * 2)
                 self.boids.add(Boid(self,
                     team,
                     QPointF(pr * math.cos(pt), pr * math.sin(pt)),
                     QPointF(vr * math.cos(vt), vr * math.sin(vt))))
 
+        self.obstacles = set()
+        for _ in range(6):
+            pr = random.uniform(0, bounds_radius)
+            pt = random.uniform(0, math.pi * 2)
+            r = random.uniform(20, 50)
+            self.obstacles.add(Obstacle(self,
+                    QPointF(pr * math.cos(pt), pr * math.sin(pt)),
+                    r))
+
     def update(self, dt):
         for boid in self.boids:
             boid.acceleration = QPointF()
 
-            bounds_repel = util.lerp(util.length(boid.position), self.bounds_radius * 0.9, self.bounds_radius, 0, 2000, True) * -util.normalized_or_null(boid.position)
+            bounds_repel = util.lerp(util.length(boid.position), self.bounds_radius - Boid.visual_range, self.bounds_radius, 0, 2000, True) * util.normalized_or_null(-boid.position)
             boid.acceleration += bounds_repel
+
+            for obstacle in self.obstacles:
+                dpos = boid.position - obstacle.position
+                obstacle_repel = util.lerp(util.length(dpos), obstacle.radius + Boid.visual_range, obstacle.radius, 0, 2000, True) * util.normalized_or_null(dpos)
+                boid.acceleration += obstacle_repel
 
             boid.neighborhood = set(neighbor for neighbor in self.boids if \
                 neighbor != boid and \
@@ -97,9 +110,7 @@ class Boid(object):
 
     def __init__(self, sim, team, position, velocity):
         self.sim = sim
-
         self.team = team
-
         self.position = position
         self.velocity = velocity
 
@@ -143,3 +154,17 @@ class Boid(object):
             self.position *= self.sim.bounds_radius
 
         self._update_graphics()
+
+class Obstacle(object):
+    def __init__(self, sim, position, radius):
+        self.sim = sim
+        self.position = position
+        self.radius = radius
+
+        self.graphic = sim.scene.addEllipse(
+            -radius, -radius,
+            radius * 2, radius * 2,
+            QPen(Qt.NoPen),
+            QBrush(util.hsl(0, 0, 10)))
+        self.graphic.setX(self.position.x())
+        self.graphic.setY(self.position.y())
